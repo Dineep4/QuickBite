@@ -8,7 +8,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const path = require('path'); // ✅ moved to top
+const path = require('path');
 
 const User = require('./models/User');
 const Contact = require('./models/Contact');
@@ -16,21 +16,23 @@ const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/order');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+// ====== Environment Variables ======
+const PORT = process.env.PORT || 10000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/quickbite';
 const JWT_SECRET = process.env.JWT_SECRET || 'quickbite-demo-secret';
 
-// Middleware
+// ====== Middleware ======
 app.use(cors({ origin: true }));
 app.use(bodyParser.json());
 
-// Database Connection
+// ====== Database Connection ======
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((e) => console.error('❌ MongoDB connection error:', e));
 
-// Auth Middleware
+// ====== Auth Middleware ======
 function auth(req, res, next) {
   const h = req.headers.authorization || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : null;
@@ -48,12 +50,12 @@ function auth(req, res, next) {
 }
 app.use(auth);
 
-// Health Check
+// ====== Health Check ======
 app.get('/api/health', (req, res) =>
   res.json({ ok: true, time: new Date().toISOString() })
 );
 
-// Contact API
+// ====== Contact API ======
 app.post('/api/contact', async (req, res) => {
   const { name, email, message } = req.body || {};
   if (!name || !email || !message)
@@ -64,7 +66,7 @@ app.post('/api/contact', async (req, res) => {
   res.status(201).json({ ok: true, item: doc.toJSON() });
 });
 
-// Register API
+// ====== Register API ======
 app.post('/api/register', async (req, res) => {
   const { name, email, password, phone, role } = req.body || {};
   if (!name || !email || !password)
@@ -100,7 +102,7 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-// Login API
+// ====== Login API ======
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password)
@@ -129,7 +131,7 @@ app.post('/api/login', async (req, res) => {
   });
 });
 
-// STAFF LOGIN API  
+// ====== STAFF LOGIN API ======
 const STAFF_USERNAME = 'canteenadmin';
 const STAFF_PASSWORD = 'staff@123';
 
@@ -153,11 +155,11 @@ app.post('/api/staff/login', async (req, res) => {
   return res.status(401).json({ ok: false, error: 'Invalid staff credentials' });
 });
 
-// Routers
+// ====== Routers ======
 app.use('/api/menu', menuRoutes);
 app.use('/api/orders', orderRoutes);
 
-// Debug Routes
+// ====== Debug Routes ======
 app.get('/api/_debug/users', async (req, res) =>
   res.json(await User.find().select('-passwordHash -__v').sort({ createdAt: -1 }).lean())
 );
@@ -165,13 +167,13 @@ app.get('/api/_debug/contacts', async (req, res) =>
   res.json(await Contact.find().sort({ createdAt: -1 }).lean())
 );
 
-// Serve static frontend files (✅ moved BEFORE app.listen)
+// ====== Serve Frontend Files ======
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Optional: redirect root (/) to index.html
+// Redirect root to index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Start Server (✅ now last)
+// ====== Start Server ======
 app.listen(PORT, () => console.log(`🚀 QuickBite backend running on port ${PORT}`));
