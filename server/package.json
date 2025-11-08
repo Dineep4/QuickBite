@@ -1,7 +1,7 @@
 {
   "name": "quickbite-backend",
   "version": "1.0.0",
-  "description": "Simple Express backend for QuickBite demo (stores contact messages and users in JSON files)",
+  "description": "Express backend for QuickBite with MongoDB Atlas connection",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -21,20 +21,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
-  }
-}
-{
-  "name": "quickbite",
-  "version": "1.0.0",
-  "main": "server/index.js",
-  "scripts": {
-    "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
   },
-  "dependencies": {
-    "express": "^4.18.2"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.22"
+  "engines": {
+    "node": "18.x"
   }
 }
