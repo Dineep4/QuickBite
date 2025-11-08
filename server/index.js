@@ -8,6 +8,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const path = require('path'); // ✅ moved to top
 
 const User = require('./models/User');
 const Contact = require('./models/Contact');
@@ -24,7 +25,8 @@ app.use(cors({ origin: true }));
 app.use(bodyParser.json());
 
 // Database Connection
-mongoose.connect(MONGO_URI)
+mongoose
+  .connect(MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((e) => console.error('❌ MongoDB connection error:', e));
 
@@ -163,14 +165,13 @@ app.get('/api/_debug/contacts', async (req, res) =>
   res.json(await Contact.find().sort({ createdAt: -1 }).lean())
 );
 
-// Start Server
-app.listen(PORT, () => console.log(`🚀 QuickBite backend running on port ${PORT}`));
-
-// Serve static frontend files
-const path = require('path');
+// Serve static frontend files (✅ moved BEFORE app.listen)
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Optional: redirect root (/) to index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
+
+// Start Server (✅ now last)
+app.listen(PORT, () => console.log(`🚀 QuickBite backend running on port ${PORT}`));
