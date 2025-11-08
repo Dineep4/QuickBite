@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Staff Orders | QuickBite</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background:#0e141b; color:#fff; font-family:Inter,sans-serif; }
+    .wrap { max-width:1000px; margin:26px auto; padding:0 16px; }
+    h1 {
+      font-size:30px; font-weight:800; margin-bottom:14px;
+      background:linear-gradient(90deg,#7ee8fa,#4dd6c6);
+      -webkit-background-clip:text; color:transparent;
+    }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+    .kpi { background:#111a21; border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; }
+    .kpi .n { font-size:24px; font-weight:800; }
+    .list .card { background:#111a21; border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; margin-bottom:10px; }
+    .row { display:flex; justify-content:space-between; gap:10px; }
+    .muted { color:#9bb0bf; font-size:13px; }
+    .btn { cursor:pointer; border:none; border-radius:10px; font-weight:700; padding:8px 10px; }
+    .btn.outline { background:transparent; border:1px solid rgba(255,255,255,0.12); color:#fff; }
+    .chip { padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; border:1px solid rgba(255,255,255,0.1) }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Staff Orders</h1>
+
+  <div class="grid">
+    <div class="kpi">Today’s Orders <div id="kToday" class="n">0</div></div>
+    <div class="kpi">Pending Orders <div id="kPending" class="n">0</div></div>
+    <div class="kpi">Menu Items <div id="kMenu" class="n">0</div></div>
+  </div>
+
+  <div class="list" id="orders"></div>
+  <div class="muted">Auto refreshes every 5 seconds. Sound plays on new orders.</div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:3000";
+let knownIds = new Set();
+let audioCtx;
+
+function ping() {
+  // tiny beep without file
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = "sine"; o.frequency.value = 880;
+  o.connect(g); g.connect(audioCtx.destination);
+  g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+  o.start(); o.stop(audioCtx.currentTime + 0.16);
+}
+
+function statusColor(s){
+  if (s === "Pending") return "#ffb86b";
+  if (s === "Preparing") return "#ffd166";
+  if (s === "Ready") return "#7ee8fa";
+  if (s === "Completed") return "#a5f59d";
+  return "#ccc";
+}
+
+async function loadKPIs() {
+  try {
+    const [a,b,c] = await Promise.all([
+      fetch(API_BASE + "/api/orders/stats/today").then(r=>r.json()),
+      fetch(API_BASE + "/api/orders/stats/pending").then(r=>r.json()),
+      fetch(API_BASE + "/api/menu/count").then(r=>r.json())
+    ]);
+    if (a.ok) document.getElementById("kToday").textContent = a.todayOrders;
+    if (b.ok) document.getElementById("kPending").textContent = b.pending;
+    if (c.ok) document.getElementById("kMenu").textContent = c.totalMenu;
+  } catch {}
+}
+
+async function setStatus(id, status) {
+  const res = await fetch(`${API_BASE}/api/orders/status/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ status })
+  });
+  await res.json();
+  loadOrders();
+  loadKPIs();
+}
+
+async function loadOrders() {
+  try {
+    const res = await fetch(API_BASE + "/api/orders/all");
+    const data = await res.json();
+    const box = document.getElementById("orders");
+    if (!data.ok) { box.innerHTML = "<div class='muted'>Failed to load</div>"; return; }
+    const orders = data.orders; // already newest first
+    let newCame = false;
+
+    box.innerHTML = "";
+    orders.forEach(o => {
+      if (!knownIds.has(o._id)) { newCame = true; knownIds.add(o._id); }
+      box.innerHTML += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div><b>${o.token}</b> • ${o.studentName}</div>
+              <div class="muted">${new Date(o.createdAt).toLocaleString()}</div>
+            </div>
+            <div class="chip" style="background:transparent;color:${statusColor(o.status)};border-color:${statusColor(o.status)}">${o.status}</div>
+          </div>
+          <div style="margin-top:8px">${o.items.map(i => `${i.name} x${i.qty}`).join(", ")}</div>
+          <div style="margin-top:6px"><b>Total:</b> ₹${o.total}</div>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn outline" onclick="setStatus('${o._id}','Pending')">Pending</button>
+            <button class="btn outline" onclick="setStatus('${o._id}','Preparing')">Preparing</button>
+            <button class="btn outline" onclick="setStatus('${o._id}','Ready')">Ready</button>
+            <button class="btn outline" onclick="setStatus('${o._id}','Completed')">Completed</button>
+          </div>
+        </div>
+      `;
+    });
+
+    if (newCame) ping();
+  } catch {
+    // ignore
+  }
+}
+
+loadKPIs();
+loadOrders();
+setInterval(loadKPIs, 2000);
+setInterval(loadOrders, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Cart | QuickBite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="assets/style.css">
+
+  <style>
+    body { background:#0e141b; color:white; font-family:Inter; }
+    .item { background:#111a21; padding:16px; border-radius:10px; margin-bottom:12px; }
+    .pay { background:#7ee8fa; color:black; padding:12px; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:700; }
+  </style>
+</head>
+
+<body>
+
+<h1 style="text-align:center;margin:20px 0;">Your Cart</h1>
+
+<div id="cartList"></div>
+<h2 style="text-align:center;margin-top:20px;">Total: ₹<span id="total"></span></h2>
+
+<button class="pay" onclick="placeOrder()">Place Order</button>
+
+<script>
+function loadCart() {
+  let cart = JSON.parse(localStorage.getItem("qb_cart") || "[]");
+  const box = document.getElementById("cartList");
+
+  let total = 0;
+  box.innerHTML = "";
+
+  cart.forEach(c => {
+    total += c.price;
+    box.innerHTML += `
+      <div class="item">
+        <h3>${c.name}</h3>
+        <p>₹${c.price}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("total").textContent = total;
+}
+
+async function placeOrder() {
+  let cart = JSON.parse(localStorage.getItem("qb_cart") || "[]");
+  let user = JSON.parse(localStorage.getItem("qb_user") || "null");
+
+  if (!user) return alert("Login first");
+  if (cart.length === 0) return alert("Cart is empty");
+
+  const payload = {
+    studentId: user.id,
+    studentName: user.name,
+    items: cart.map(i => i.name),
+    total: cart.reduce((sum, i) => sum + i.price, 0)
+  };
+
+  const res = await fetch("http://localhost:3000/api/orders/place", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
+    alert("Order placed!");
+    localStorage.removeItem("qb_cart");
+    window.location.href = "student-orders.html";
+  } else {
+    alert("Failed: " + data.error);
+  }
+}
+
+loadCart();
+</script>
+
+</body>
+</html>

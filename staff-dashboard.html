@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Staff • Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body{background:#0e141b;color:#fff;font-family:Inter,system-ui}
+    .wrap{max-width:1000px;margin:28px auto;padding:0 14px}
+    h1{font-size:28px;font-weight:800;margin:8px 0 14px;background:linear-gradient(90deg,#ff6b6b,#ffb86b);
+       -webkit-background-clip:text;color:transparent}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .card{background:#111a21;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:18px}
+    .big{font-size:32px;font-weight:800}
+    .muted{color:#9ab}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:16px}
+    .link{display:block;text-decoration:none;background:#1c2732;color:#fff;border:1px solid rgba(255,255,255,.06);
+          border-radius:12px;padding:14px;font-weight:700;text-align:center}
+    .link:hover{transform:translateY(-2px)}
+  </style>
+</head>
+<body>
+  <header class="navbar"><div class="container nav-inner">
+    <a class="brand" href="index.html"><div class="logo">QuickBite</div><div class="tag">Staff</div></a>
+    <nav class="nav-links"><a class="active" href="staff-dashboard.html">Dashboard</a><a href="staff-orders.html">Orders</a><a href="staff-menu.html">Menu</a></nav>
+  </div></header>
+
+  <main class="wrap">
+    <h1>Dashboard</h1>
+
+    <div class="cards">
+      <div class="card"><div class="muted">Today’s Orders</div><div id="kpiToday" class="big">—</div></div>
+      <div class="card"><div class="muted">Pending Orders</div><div id="kpiPending" class="big">—</div></div>
+      <div class="card"><div class="muted">Total Menu Items</div><div id="kpiMenu" class="big">—</div></div>
+    </div>
+
+    <div class="grid">
+      <a class="link" href="staff-orders.html">View Orders</a>
+      <a class="link" href="staff-menu.html">Manage Menu</a>
+    </div>
+  </main>
+
+  <script>
+    const API = "http://localhost:3000";
+    async function getJSON(url){
+      const t = localStorage.getItem('staff_token') || '';
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${t}` }});
+      try { return await res.json(); } catch { return { ok:false } }
+    }
+    async function refreshKPIs(){
+      const today = await getJSON(`${API}/api/orders/stats/today`);
+      const pend  = await getJSON(`${API}/api/orders/stats/pending`);
+      const menu  = await getJSON(`${API}/api/menu/count`);
+
+      document.getElementById('kpiToday').textContent  = today?.todayOrders ?? '0';
+      document.getElementById('kpiPending').textContent= pend?.pending ?? '0';
+      document.getElementById('kpiMenu').textContent   = menu?.totalMenu ?? '0';
+    }
+    refreshKPIs();
+    setInterval(refreshKPIs, 10000);
+  </script>
+</body>
+</html>

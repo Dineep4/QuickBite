@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QuickBite | About</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+
+  <style>
+    body {
+      background: #0d131a;
+      color: #fff;
+      font-family: Inter, sans-serif;
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 14px;
+      background: linear-gradient(90deg, #ff6b6b, #ffb86b);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto 28px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .value-icon {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .value-box {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .value-title {
+      font-weight: 700;
+      font-size: 17px;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+
+    .value-desc {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .timeline {
+      border-left: 2px dashed rgba(255, 255, 255, 0.15);
+      padding-left: 18px;
+      margin-left: 6px;
+    }
+
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+      background: #ff6b6b;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .how-card {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .step-badge {
+      background: linear-gradient(90deg, #ff6b6b, #ffb86b);
+      color: #06121b;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      font-weight: 800;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .faq {
+      padding: 20px;
+    }
+
+    .faq p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html">
+          <linearGradient id="g1" x1="0" x2="1">
+            <stop offset="0" stop-color="#ff6b6b" />
+            <stop offset="1" stop-color="#ffb86b" />
+          </linearGradient>
+          <rect rx="6" width="24" height="24" fill="url(#g1)" />
+        </svg>
+        <div class="brand-text">
+        <div class="logo" style="color: rgb(187, 165, 165);">QuickBite</div>
+          <div class="tag">Fast • Fresh • Friendly</div>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a class="active" href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="container" style="padding:60px 0 30px;">
+      <h1 class="section-title">We make fast food feel thoughtful</h1>
+      <p class="subtitle">QuickBite brings modern, queue-less canteen experiences to students and staff. Simple ordering. Faster preparation. Zero chaos.</p>
+
+      <div class="glass" style="max-width: 760px; margin: 0 auto;">
+        <p style="color:#ccc; font-size:15px; line-height:1.6;">
+          What started as a small attempt to reduce crowding in college cafeterias is now a streamlined digital experience trusted by thousands daily. We focus on three pillars: speed, freshness, and trust.
+        </p>
+      </div>
+    </section>
+
+
+    <!-- VALUES SECTION -->
+    <section class="container" style="margin-top:40px;">
+      <h2 class="section-title">What we believe</h2>
+      <p class="subtitle">These three values guide how we build QuickBite and how we serve every meal.</p>
+
+      <div class="grid grid-3">
+        <div class="glass value-box">
+          <div class="value-icon">⚡</div>
+          <div class="value-title">Speed with substance</div>
+          <div class="value-desc">Fast service only matters if the food stays great. We optimise both flavors and prep-time.</div>
+        </div>
+
+        <div class="glass value-box">
+          <div class="value-icon">🥗</div>
+          <div class="value-title">Fresh by default</div>
+          <div class="value-desc">Seasonal ingredients and zero-stale policies ensure every bite tastes like it should.</div>
+        </div>
+
+        <div class="glass value-box">
+          <div class="value-icon">🔒</div>
+          <div class="value-title">Built on trust</div>
+          <div class="value-desc">Transparent pricing, safe pickup, responsible hygiene and real-time order tracking.</div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- HOW IT WORKS -->
+    <section class="container" style="margin-top:50px;">
+      <h2 class="section-title">How QuickBite works</h2>
+
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="glass how-card">
+          <div class="step-badge">1</div>
+          <div>
+            <h4>Browse & Order</h4>
+            <p>Students explore the menu, pick their items, and order in seconds.</p>
+          </div>
+        </div>
+
+        <div class="glass how-card">
+          <div class="step-badge">2</div>
+          <div>
+            <h4>Kitchen Queue</h4>
+            <p>Canteen staff receive orders live and prepare them without delays.</p>
+          </div>
+        </div>
+
+        <div class="glass how-card">
+          <div class="step-badge">3</div>
+          <div>
+            <h4>Pickup Token</h4>
+            <p>Students receive a unique token (QB-1, QB-2...) for collection.</p>
+          </div>
+        </div>
+
+        <div class="glass how-card">
+          <div class="step-badge">4</div>
+          <div>
+            <h4>Track & Enjoy</h4>
+            <p>Track order status and collect when ready. No lines, no waiting.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- FAQ -->
+    <section class="container" style="margin-top:50px; margin-bottom:50px;">
+      <h2 class="section-title">FAQs</h2>
+
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="glass faq">
+          <h4>Do I need an account?</h4>
+          <p>Yes. It helps save your history, preferences and token records.</p>
+        </div>
+
+        <div class="glass faq">
+          <h4>How are tokens generated?</h4>
+          <p>Every morning, tokens reset—starting from <strong>QB-1</strong>.</p>
+        </div>
+
+        <div class="glass faq">
+          <h4>Can staff edit menus?</h4>
+          <p>Yes. Staff can add, remove and update items instantly.</p>
+        </div>
+
+        <div class="glass faq">
+          <h4>Is my order safely handled?</h4>
+          <p>Yes—strict hygiene, sealed pickup and real-time tracking.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="brand-col">
+        <div class="logo">QuickBite</div>
+        <p>Fast, simple and modern digital canteen experience.</p>
+      </div>
+
+      <div class="links-col">
+        <a href="index.html">Home</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div class="legal-col">
+        <p>© <span id="year"></span> QuickBite — All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/script.js"></script>
+</body>
+
+</html>

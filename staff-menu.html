@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Menu</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body {
+      background:#0e141b;
+      color:white;
+      font-family: Inter, sans-serif;
+    }
+    .box {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 25px;
+      background:#111a21;
+      border-radius:14px;
+      box-shadow:0 5px 20px rgba(0,0,0,0.4);
+    }
+    input {
+      width:100%;
+      padding:12px;
+      margin:10px 0;
+      border:none;
+      border-radius:10px;
+      background:#1c2732;
+      color:white;
+    }
+    button {
+      padding:10px 16px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn {
+      width:100%;
+      background:#4dd6c6;
+      margin-top:10px;
+    }
+    .item {
+      display:flex;
+      justify-content:space-between;
+      background:#1c2732;
+      padding:12px;
+      border-radius:10px;
+      margin-top:10px;
+    }
+    .edit-btn { background:#ffb86b; }
+    .delete-btn { background:#ff6b6b; margin-left:8px; }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2 style="text-align:center;color:#4dd6c6;">Manage Menu</h2>
+
+  <input id="name" placeholder="Food Name">
+  <input id="price" type="number" placeholder="Price">
+
+  <button class="btn" onclick="addItem()">Add Item</button>
+
+  <p id="msg" style="color:red;"></p>
+
+  <h3 style="margin-top:20px;">Current Menu</h3>
+  <div id="menuList">Loading...</div>
+</div>
+
+<script>
+const API = "http://localhost:3000/api/menu";
+
+// ✅ Load Menu Items
+async function loadMenu() {
+  const box = document.getElementById("menuList");
+  box.innerHTML = "Loading...";
+  
+  const res = await fetch(API + "/all");
+  const data = await res.json();
+
+  if (!data.ok) {
+    box.innerHTML = "<p style='color:red;'>Failed to load.</p>";
+    return;
+  }
+
+  box.innerHTML = "";
+
+  data.items.forEach(item => {
+    box.innerHTML += `
+      <div class="item">
+        <div>
+            <b>${item.name}</b> — ₹${item.price}
+        </div>
+
+        <div>
+          <button class="edit-btn" onclick="editItem('${item._id}', '${item.name}', ${item.price})">Edit</button>
+          <button class="delete-btn" onclick="deleteItem('${item._id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// ✅ Add Item
+async function addItem() {
+  const name = document.getElementById("name").value.trim();
+  const price = document.getElementById("price").value.trim();
+  const msg = document.getElementById("msg");
+
+  if (!name || !price) {
+    msg.textContent = "Please enter name & price!";
+    return;
+  }
+
+  msg.textContent = "Adding...";
+
+  const res = await fetch(API + "/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, price })
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
+    msg.style.color = "lightgreen";
+    msg.textContent = "Added successfully!";
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+    loadMenu();   // ✅ Refresh list
+  } else {
+    msg.style.color = "red";
+    msg.textContent = data.error;
+  }
+}
+
+// ✅ Delete Item
+async function deleteItem(id) {
+  await fetch(API + "/delete/" + id, { method: "DELETE" });
+  loadMenu();
+}
+
+// ✅ Edit Item
+async function editItem(id, oldName, oldPrice) {
+  const name = prompt("Edit name:", oldName);
+  const price = prompt("Edit price:", oldPrice);
+
+  if (!name || !price) return;
+
+  await fetch(API + "/update/" + id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, price })
+  });
+
+  loadMenu();
+}
+
+loadMenu();
+</script>
+
+</body>
+</html>

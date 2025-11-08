@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Menu | QuickBite</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background:#0e141b; font-family:Inter,sans-serif; color:white; }
+    h1 {
+      text-align:center; margin:24px 0 10px;
+      font-size:32px; font-weight:800;
+      background:linear-gradient(90deg,#ff6b6b,#ffb86b);
+      -webkit-background-clip:text; color:transparent;
+    }
+    .menu-wrap { max-width:1100px; margin:0 auto; padding:0 20px; }
+    .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:18px; margin-top:18px; }
+    .card { background:#131d26; padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.25); }
+    .item-name { font-weight:700; font-size:18px; color:#ffb86b; }
+    .item-price { color:#7ee8fa; font-weight:600; margin-top:4px; }
+    .btn { cursor:pointer; border:none; border-radius:10px; font-weight:700; }
+    .btn-add { margin-top:10px; padding:8px 12px; background:#ff6b6b; color:#fff; }
+    .cart { max-width:720px; margin:26px auto; background:#111a21; padding:18px; border-radius:12px; }
+    .cart-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .qty { display:inline-flex; align-items:center; gap:8px; }
+    .qty button { width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#fff; cursor:pointer; }
+    .checkout-btn { width:100%; margin-top:12px; padding:12px; background:#4dd6c6; color:#06121b; }
+    .muted { color:#9bb0bf; font-size:14px; }
+    .token-box { text-align:center; margin-top:10px; }
+  </style>
+</head>
+<body>
+
+<h1>Menu</h1>
+<div class="menu-wrap">
+  <div id="menuGrid" class="menu-grid"></div>
+</div>
+
+<h1>Your Cart</h1>
+<div class="cart">
+  <div id="cartBox" class="muted">Cart is empty</div>
+  <div style="display:flex;justify-content:space-between;margin-top:10px;">
+    <div>Total:</div><div id="totalAmt">₹0</div>
+  </div>
+  <button class="btn checkout-btn" onclick="placeOrder()">Place Order</button>
+  <div id="placeMsg" class="token-box"></div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:3000";
+let cart = JSON.parse(localStorage.getItem("qb_cart") || "[]");
+
+async function loadMenu() {
+  const grid = document.getElementById("menuGrid");
+  grid.innerHTML = "<div class='muted' style='grid-column:1/-1;text-align:center;'>Loading...</div>";
+  try {
+    const res = await fetch(API_BASE + "/api/menu/all");
+    const data = await res.json();
+    if (!data.ok) { grid.innerHTML = "<div class='muted'>Failed to load menu</div>"; return; }
+    grid.innerHTML = "";
+    data.items.forEach(it => {
+      grid.innerHTML += `
+        <div class="card">
+          <div class="item-name">${it.name}</div>
+          <div class="item-price">₹${it.price}</div>
+          <button class="btn btn-add" onclick="addToCart('${it._id}','${it.name}',${it.price})">Add</button>
+        </div>
+      `;
+    });
+  } catch {
+    grid.innerHTML = "<div class='muted'>Server offline</div>";
+  }
+}
+
+function addToCart(id, name, price) {
+  const found = cart.find(x => x.itemId === id);
+  if (found) found.qty += 1;
+  else cart.push({ itemId:id, name, price, qty:1 });
+  localStorage.setItem("qb_cart", JSON.stringify(cart));
+  renderCart();
+}
+
+function changeQty(i, delta) {
+  cart[i].qty = Math.max(1, cart[i].qty + delta);
+  localStorage.setItem("qb_cart", JSON.stringify(cart));
+  renderCart();
+}
+
+function removeItem(i) {
+  cart.splice(i,1);
+  localStorage.setItem("qb_cart", JSON.stringify(cart));
+  renderCart();
+}
+
+function renderCart() {
+  const box = document.getElementById("cartBox");
+  if (cart.length === 0) { box.innerHTML = "Cart is empty"; document.getElementById("totalAmt").textContent = "₹0"; return; }
+  box.innerHTML = "";
+  cart.forEach((c,i) => {
+    box.innerHTML += `
+      <div class="cart-row">
+        <div style="flex:1;">${c.name}</div>
+        <div class="qty">
+          <button onclick="changeQty(${i},-1)">-</button>
+          <span>${c.qty}</span>
+          <button onclick="changeQty(${i},1)">+</button>
+        </div>
+        <div>₹${c.price * c.qty}</div>
+        <button class="btn" style="padding:6px 10px;border:1px solid rgba(255,255,255,0.1);" onclick="removeItem(${i})">Remove</button>
+      </div>
+    `;
+  });
+  const total = cart.reduce((s,a)=>s + a.price*a.qty, 0);
+  document.getElementById("totalAmt").textContent = "₹" + total;
+}
+
+async function placeOrder() {
+  const msg = document.getElementById("placeMsg");
+  const user = JSON.parse(localStorage.getItem("qb_user") || "null");
+  if (!user) { showAlert("Please login first"); return window.location.href = "student-login.html"; }
+  if (cart.length === 0) return showAlert("Cart is empty");
+
+  const total = cart.reduce((s,a)=>s + a.price*a.qty, 0);
+  const payload = {
+    studentId: user.id || user._id || user.userId || user.email, // fallback
+    studentName: user.name || "Student",
+    items: cart.map(c => ({ itemId: c.itemId, name:c.name, price:c.price, qty:c.qty })),
+    total
+  };
+
+  msg.textContent = "Placing order...";
+  try {
+    const res = await fetch(API_BASE + "/api/orders/place", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.ok) { msg.textContent = "Failed: " + (data.error || "Unknown"); return; }
+
+    // success
+    const token = data.order.token;
+    msg.innerHTML = `<div style="margin-top:8px">✅ Order placed. Your token: <b>${token}</b></div>
+                     <div class="muted">Show this token at the counter. Track status in <a href="student-orders.html" style="color:#7ee8fa">My Orders</a>.</div>`;
+    localStorage.removeItem("qb_cart");
+    cart = [];
+    renderCart();
+  } catch (e) {
+    msg.textContent = "Network error";
+  }
+}
+
+loadMenu();
+renderCart();
+// ✅ Custom popup alert
+function showAlert(msg) {
+  document.getElementById("alertMsg").textContent = msg;
+  document.getElementById("customAlert").style.display = "flex";
+}
+
+function closeAlert() {
+  document.getElementById("customAlert").style.display = "none";
+}
+
+</script>
+<!-- ✅ Custom Alert Popup -->
+<div id="customAlert" style="display:none;
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);
+  justify-content:center;align-items:center;z-index:9999;">
+  
+  <div style="background:#111a21;padding:25px;border-radius:12px;
+      text-align:center;width:300px;box-shadow:0 0 20px rgba(0,0,0,0.5);">
+      
+    <h3 style="color:#ffb86b;margin-bottom:10px;">QuickBite</h3>
+    <p id="alertMsg" style="color:white;font-size:15px;margin-bottom:15px;"></p>
+
+    <button onclick="closeAlert()" 
+      style="padding:8px 20px;border:none;background:#4dd6c6;
+      color:black;font-weight:700;border-radius:8px;cursor:pointer;">
+      OK
+    </button>
+
+  </div>
+</div>
+
+</body>
+</html>

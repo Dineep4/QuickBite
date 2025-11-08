@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuickBite | Contact</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+
+  <style>
+    body {
+      background: #0b1117;
+      color: white;
+      font-family: Inter, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Page header */
+    .hero-title {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #ff6b6b, #ffb86b);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    /* Subtitle */
+    .hero-sub {
+      text-align: center;
+      color: #a8b3bd;
+      margin-top: 8px;
+      font-size: 16px;
+    }
+
+    /* Contact container */
+    .contact-box {
+      width: 90%;
+      max-width: 680px;
+      margin: 40px auto 70px;
+      padding: 35px;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffb86b;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 18px;
+      border-radius: 12px;
+      border: none;
+      background: #131d26;
+      color: white;
+      font-size: 15px;
+      outline: none;
+      border: 1px solid transparent;
+      transition: 0.25s;
+    }
+
+    input:focus, textarea:focus {
+      border: 1px solid #ffb86b;
+      background: #16202a;
+    }
+
+    textarea {
+      height: 130px;
+      resize: none;
+    }
+
+    /* Button */
+    .send-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, #ff6b6b, #ffb86b);
+      border: none;
+      border-radius: 12px;
+      color: #06121b;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .send-btn:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 20px rgba(255,120,110,0.35);
+    }
+
+    #contactMsg {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 15px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR (unchanged) -->
+<header class="navbar">
+  <div class="container nav-inner">
+    <a class="brand" href="index.html">
+        <div class="logo" style="color: rgb(88, 3, 3);">QuickBite</div>
+      <div class="tag">Fast • Fresh • Friendly</div>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a class="active" href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+
+<h1 class="hero-title">Get in Touch</h1>
+<p class="hero-sub">Write a question/Give Feedback We’re here to help.</p>
+
+<div class="contact-box">
+  <form id="contactForm">
+    <label>Your Name</label>
+    <input type="text" name="name" placeholder="Enter your name" required>
+
+    <label>Your Email</label>
+    <input type="email" name="email" placeholder="Enter your email" required>
+
+    <label>Your Message</label>
+    <textarea name="message" placeholder="Write your message..." required></textarea>
+
+    <button type="button" class="send-btn" onclick="submitContact()">Send Message</button>
+    <p id="contactMsg"></p>
+  </form>
+</div>
+
+<script>
+async function submitContact() {
+  const msg = document.getElementById("contactMsg");
+  msg.style.display = "block";
+  msg.style.color = "white";
+  msg.textContent = "Sending...";
+
+  const form = document.getElementById("contactForm");
+  const fd = new FormData(form);
+
+  const payload = {
+    name: fd.get("name"),
+    email: fd.get("email"),
+    message: fd.get("message")
+  };
+
+  try {
+    const res = await fetch("http://localhost:3000/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      msg.style.color = "#4dd6c6";
+      msg.textContent = "Message sent successfully!";
+      form.reset();
+    } else {
+      msg.style.color = "tomato";
+      msg.textContent = data.error || "Failed to send.";
+    }
+  } catch {
+    msg.style.color = "tomato";
+    msg.textContent = "Server not reachable.";
+  }
+}
+</script>
+
+<script src="assets/script.js"></script>
+</body>
+</html>

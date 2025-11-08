@@ -1,0 +1,40 @@
+{
+  "name": "quickbite-backend",
+  "version": "1.0.0",
+  "description": "Simple Express backend for QuickBite demo (stores contact messages and users in JSON files)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^8.19.3",
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
+{
+  "name": "quickbite",
+  "version": "1.0.0",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>My Orders | QuickBite</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background:#0e141b; color:#fff; font-family:Inter,sans-serif; }
+    .wrap { max-width:900px; margin:28px auto; padding:0 16px; }
+    h1 {
+      font-size:30px; font-weight:800; margin-bottom:12px;
+      background:linear-gradient(90deg,#ff6b6b,#ffb86b);
+      -webkit-background-clip:text; color:transparent;
+    }
+    .card { background:#111a21; border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; margin-bottom:12px; }
+    .row { display:flex; justify-content:space-between; gap:12px; }
+    .muted { color:#9bb0bf; font-size:13px; }
+    .chip { padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; border:1px solid rgba(255,255,255,0.1) }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>My Orders</h1>
+  <div id="list"></div>
+  <div class="muted">Auto refreshes every 8 seconds.</div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:3000";
+let user = null;
+
+function statusColor(s){
+  if (s === "Pending") return "#ffb86b";
+  if (s === "Preparing") return "#ffd166";
+  if (s === "Ready") return "#7ee8fa";
+  if (s === "Completed") return "#a5f59d";
+  return "#ccc";
+}
+
+async function loadOrders(){
+  user = JSON.parse(localStorage.getItem("qb_user") || "null");
+  if (!user) return (window.location.href = "student-login.html");
+
+  const studentId = user.id || user._id || user.userId || user.email;
+  const res = await fetch(`${API_BASE}/api/orders/me/${encodeURIComponent(studentId)}`);
+  const data = await res.json();
+  const list = document.getElementById("list");
+
+  if (!data.ok) { list.innerHTML = "<div class='muted'>Failed to load orders</div>"; return; }
+  if (data.orders.length === 0) { list.innerHTML = "<div class='muted'>No orders yet</div>"; return; }
+
+  list.innerHTML = "";
+  data.orders.forEach(o => {
+    list.innerHTML += `
+      <div class="card">
+        <div class="row">
+          <div>
+            <div><b>Token:</b> ${o.token}</div>
+            <div class="muted">${new Date(o.createdAt).toLocaleString()}</div>
+          </div>
+          <div class="chip" style="background:transparent;color:${statusColor(o.status)};border-color:${statusColor(o.status)}">${o.status}</div>
+        </div>
+        <div style="margin-top:8px">
+          ${o.items.map(i => `${i.name} x${i.qty}`).join(", ")}
+        </div>
+        <div style="margin-top:6px"><b>Total:</b> ₹${o.total}</div>
+      </div>
+    `;
+  });
+}
+
+loadOrders();
+setInterval(loadOrders, 2000);
+</script>
+</body>
+</html>
