@@ -165,3 +165,12 @@ app.get('/api/_debug/contacts', async (req, res) =>
 
 // Start Server
 app.listen(PORT, () => console.log(`🚀 QuickBite backend running on port ${PORT}`));
+
+// Serve static frontend files
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Optional: redirect root (/) to index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
